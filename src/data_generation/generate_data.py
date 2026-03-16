@@ -237,12 +237,13 @@ def main():
     search_df = generate_search_queries(users_df, 5000)  # Reduced from 20000
     
     # Save to CSV files
+    # Save to CSV files
     print("\nSaving data to CSV files...")
     users_df.to_csv('../../data/raw/pinterest_users.csv', index=False)
     boards_df.to_csv('../../data/raw/pinterest_boards.csv', index=False)
-    pins_df.to_csv('data/raw/pinterest_pins.csv', index=False)
-    interactions_df.to_csv('data/raw/pinterest_interactions.csv', index=False)
-    search_df.to_csv('data/raw/pinterest_searches.csv', index=False)
+    pins_df.to_csv('../../data/raw/pinterest_pins.csv', index=False)
+    interactions_df.to_csv('../../data/raw/pinterest_interactions.csv', index=False)
+    search_df.to_csv('../../data/raw/pinterest_searches.csv', index=False)
     
     # Summary statistics
     print("\nData Generation Summary:")
@@ -278,7 +279,7 @@ def main():
         'optimization': 'reduced_size_for_speed'
     }
     
-    with open('data/raw/generation_metadata.json', 'w') as f:
+    with open('../../data/raw/generation_metadata.json', 'w') as f:
         json.dump(metadata, f, indent=2)
 
 if __name__ == "__main__":
