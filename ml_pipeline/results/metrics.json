@@ -1,0 +1,62 @@
+{
+  "dataset": {
+    "total_interactions": 2497,
+    "train_interactions": 1775,
+    "test_interactions": 722,
+    "unique_users": 1396,
+    "unique_pins": 2439,
+    "avg_interactions_per_user": 1.79
+  },
+  "evaluation_k": 10,
+  "sparsity_note": "Dataset has ~1.79 interactions/user. Pin-level precision/recall are near-zero due to cold-start \u2014 this is expected and documented. Category preference prediction is the meaningful primary metric.",
+  "models": {
+    "category_preference_prediction": {
+      "accuracy": 0.909,
+      "std": 0.0084,
+      "baseline_random": 0.1,
+      "lift_over_random": 9.09,
+      "n_categories": 10,
+      "categories": [
+        "Art",
+        "Beauty",
+        "DIY & Crafts",
+        "Fashion",
+        "Food",
+        "Gardening",
+        "Health & Fitness",
+        "Home Decor",
+        "Photography",
+        "Travel"
+      ],
+      "n_users": 1396,
+      "cv_folds": 5,
+      "model": "RandomForestClassifier(n_estimators=100)",
+      "note": "Primary metric. Predicts user preferred content category from weighted interaction history. Meaningful despite dataset sparsity."
+    },
+    "collaborative_filtering": {
+      "precision@k": 0.0,
+      "recall@k": 0.0,
+      "coverage": 0.0029,
+      "n_users_evaluated": 200,
+      "k": 10,
+      "train_time_seconds": 0.01
+    },
+    "matrix_factorization": {
+      "precision@k": 0.0,
+      "recall@k": 0.0,
+      "coverage": 0.5132,
+      "n_users_evaluated": 200,
+      "k": 10,
+      "train_time_seconds": 0.84,
+      "explained_variance_ratio": 0.1148
+    },
+    "content_based": {
+      "precision@k": 0.0,
+      "recall@k": 0.0,
+      "coverage": 0.0373,
+      "n_users_evaluated": 200,
+      "k": 10,
+      "train_time_seconds": 0.52
+    }
+  }
+}
