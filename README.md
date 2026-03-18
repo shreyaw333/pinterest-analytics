@@ -2,18 +2,32 @@
 
 **Live Application:** https://pinterest-analytics.vercel.app/
 
-A full-stack ML-powered recommendation engine that analyzes Pinterest user behavior and pin engagement to deliver personalized content recommendations in real-time. Built with collaborative filtering and matrix factorization for optimized content discovery.
+A full-stack ML-powered recommendation engine that analyzes Pinterest user behavior and pin engagement to deliver personalized content recommendations. Built with collaborative filtering, matrix factorization, and content-based filtering — evaluated against a generated dataset of 2,497 interactions across 2,000 users and 48,672 pins.
+
+---
+
+## ML Results
+
+| Model | Metric | Result |
+|---|---|---|
+| Category Preference (RandomForest) | Accuracy (5-fold CV) | **90.9% ± 0.84%** |
+| Random baseline | Accuracy | 10.0% |
+| Lift over baseline | — | **9.1x** |
+| Matrix Factorization (SVD) | Catalog coverage | **51.3%** |
+| SVD | Explained variance | 11.5% |
+
+> **Note on sparsity:** With ~1.79 interactions/user, pin-level precision/recall are near-zero due to the cold-start problem — expected and documented. Category preference prediction is the appropriate primary metric for this sparsity level. Full results in `ml_pipeline/results/metrics.json`.
 
 ---
 
 ## Overview
 
-The Pinterest Trending Pins Recommender processes Pinterest-like social media data to surface relevant content faster. The system identifies emerging trends across categories like Fashion, Home Decor, Food, and Travel — compressing trend identification from weeks to hours.
+The Pinterest Trending Pins Recommender processes Pinterest-like social media data to surface relevant content faster. The system identifies emerging trends across 10 categories: Fashion, Home Decor, Food, Travel, DIY & Crafts, Beauty, Health & Fitness, Photography, Art, and Gardening.
 
 **Key capabilities:**
 - Personalized pin recommendations using collaborative filtering on user interaction history
-- Real-time trending detection across 10+ content categories
-- Comprehensive analytics dashboard with engagement metrics and system health monitoring
+- Category preference prediction with 90.9% accuracy — 9.1x lift over random baseline
+- Analytics dashboard showing real engagement metrics derived from the dataset
 
 ---
 
@@ -23,16 +37,17 @@ The system follows a microservices architecture with clear separation between th
 
 **Frontend (React + Vercel)**
 - Interactive analytics dashboard built with Recharts
-- Real-time metrics display and recommendation performance monitoring
+- Displays real metrics from `ml_pipeline/results/metrics.json`
 
 **Backend (Django + PostgreSQL)**
 - Django REST Framework API with Redis caching layer
 - Celery background tasks for async ML model training
 
-**ML Pipeline (Scikit-learn + AWS SageMaker)**
-- Collaborative filtering and matrix factorization for user-based recommendations
-- Content-based filtering using pin metadata and TF-IDF
-- Hybrid approach combining multiple algorithms for improved accuracy
+**ML Pipeline (Scikit-learn)**
+- Collaborative filtering using weighted user-item cosine similarity
+- Matrix factorization via Truncated SVD (50 latent factors)
+- Content-based filtering using TF-IDF on pin category + tags
+- Evaluated with 5-fold cross-validation and train/test split by recency
 
 **Streaming (Apache Kafka)**
 - Real-time user interaction event processing
@@ -49,10 +64,10 @@ The system follows a microservices architecture with clear separation between th
 
 ## Features
 
-- **Real-time Recommendation Engine** — Collaborative filtering analyzes user behavior to surface relevant pins with sub-20ms response times via Redis caching
-- **Trending Content Detection** — ML pipeline identifies viral pins and emerging trends across 10+ categories
-- **Performance Analytics** — Dashboard tracks CTR, engagement rates, recommendation accuracy, and system health in real-time
-- **Scalable Infrastructure** — Kafka streaming + SageMaker inference designed for high-throughput recommendation serving
+- **Three-model Recommendation Engine** — Collaborative filtering, matrix factorization, and content-based filtering with documented evaluation metrics
+- **Trending Content Detection** — ML pipeline identifies high-engagement pins across 10 categories using weighted interaction signals (save=5, share=4, like=3, click=2, comment=1)
+- **Honest Evaluation** — Cold-start limitations documented; metrics derived from actual data, not estimates
+- **Scalable Infrastructure** — Kafka streaming + Redis caching designed for high-throughput recommendation serving
 
 ---
 
@@ -70,24 +85,26 @@ The system follows a microservices architecture with clear separation between th
 
 ## Data Pipeline
 
-**Data Generation**
-- Faker-generated Pinterest-like dataset: 50K+ pins, 2K+ users, 48K+ interactions across 10 categories
+**Dataset**
+- Faker-generated Pinterest-like data: 48,672 pins · 2,000 users · 2,497 interactions across 10 categories
+- Interaction types: save, like, click, share, comment — weighted by engagement strength
 
 **Feature Engineering**
+- Weighted user-item interaction matrix (save=5, share=4, like=3, click=2, comment=1)
 - User preference vectors from interaction history
-- Pin popularity scores based on engagement signals
-- Temporal features for trending detection
-- Category embeddings for content similarity
+- TF-IDF vectors from pin category, subcategory, and tags
+- Temporal train/test split by recency (80/20 per user)
 
 **Model Training**
-- Collaborative filtering with user-item matrices
-- Matrix factorization with SGD optimization
-- Hybrid approach combining collaborative + content-based signals
+- Collaborative filtering: cosine similarity across user-item matrix
+- Matrix factorization: Truncated SVD with 50 latent factors
+- Content-based: TF-IDF profile matching against user interaction history
 
-**Real-time Inference**
-- Redis caching for high-frequency requests
-- Kafka streaming for live recommendation updates
-- AWS SageMaker for scalable model serving
+**Running the Pipeline**
+```bash
+PYTHONPATH=. python ml_pipeline/train_models.py
+```
+Results saved to `ml_pipeline/results/metrics.json`.
 
 ---
 
@@ -99,9 +116,9 @@ pinterest-analytics/
 ├── apps/core/                # Django models
 ├── apps/recommendations/     # ML recommendation engine
 ├── apps/analytics/           # Dashboard APIs
-├── src/models/               # ML algorithms
+├── src/models/               # ML algorithms (CF, MF, CB, evaluation)
 ├── data/raw/                 # Generated datasets
-├── ml_pipeline/              # Training scripts
+├── ml_pipeline/              # Training scripts + results
 └── scripts/                  # Utility scripts
 ```
 
@@ -109,4 +126,4 @@ pinterest-analytics/
 
 ## Tech Stack
 
-`Django` `PostgreSQL` `Redis` `Apache Kafka` `React.js` `Scikit-learn` `AWS SageMaker` `Docker` `Vercel`
+`Django` `PostgreSQL` `Redis` `Apache Kafka` `React.js` `Scikit-learn` `Docker` `Vercel`
